@@ -1,18 +1,20 @@
 // adapted from https://github.com/webrtc/testrtc/blob/master/src/js/bandwidth_test.js
 
-import WebrtcCall from '../utils/WebrtcCall';
-import Test from '../utils/Test';
-import StatisticsAggregate from '../utils/StatisticsAggregate';
-import ERROR_CODES from '../utils/testErrorCodes';
+import WebrtcCall from "../utils/WebrtcCall";
+import Test from "../utils/Test";
+import StatisticsAggregate from "../utils/StatisticsAggregate";
+import ERROR_CODES from "../utils/testErrorCodes";
 
 export default class AudioBandwidthTest extends Test {
-  constructor () {
+  constructor() {
     super(...arguments);
-    this.name = 'Audio Bandwidth Test';
+    this.name = "Audio Bandwidth Test";
     this.maxAudioBitrateKbps = 510;
     this.durationMs = 40000;
     this.statStepMs = 100;
-    this.bweStats = new StatisticsAggregate(0.75 * this.maxAudioBitrateKbps * 1000);
+    this.bweStats = new StatisticsAggregate(
+      0.75 * this.maxAudioBitrateKbps * 1000
+    );
     this.rttStats = new StatisticsAggregate();
     this.packetsLost = null;
     this.startTime = null;
@@ -23,7 +25,9 @@ export default class AudioBandwidthTest extends Test {
     };
 
     if (this.options.mediaOptions.audio.deviceId) {
-      this.constraints.audio = {deviceId: this.options.mediaOptions.audio.deviceId};
+      this.constraints.audio = {
+        deviceId: this.options.mediaOptions.audio.deviceId
+      };
     } else {
       this.constraints.audio = true;
     }
@@ -32,11 +36,11 @@ export default class AudioBandwidthTest extends Test {
     this.stats = {};
   }
 
-  start () {
+  start() {
     super.start();
 
     if (!this.options.iceConfig.iceServers.length) {
-      const error = new Error('No ice servers were provided');
+      const error = new Error("No ice servers were provided");
       error.pcCode = ERROR_CODES.ICE;
       error.details = this.log;
       return this.reject(error);
@@ -50,7 +54,7 @@ export default class AudioBandwidthTest extends Test {
       .then(this.completed.bind(this))
       .then(() => {
         if (this.hasError) {
-          return Promise.reject(new Error('Audio Bandwidth Error'));
+          return Promise.reject(new Error("Audio Bandwidth Error"));
         }
 
         return this.resolve(this.getResults());
@@ -63,7 +67,7 @@ export default class AudioBandwidthTest extends Test {
       });
   }
 
-  getResults () {
+  getResults() {
     return {
       log: this.log,
       stats: this.stats,
@@ -71,54 +75,64 @@ export default class AudioBandwidthTest extends Test {
     };
   }
 
-  addLog (level, msg) {
+  addLog(level, msg) {
     this.logger[level.toLowerCase()](msg);
-    if (msg && typeof msg === 'object') {
+    if (msg && typeof msg === "object") {
       msg = JSON.stringify(msg);
     }
-    if (level === 'error') {
+    if (level === "error") {
       this.hasError = true;
     }
     this.log.push(`${level}: ${msg}`);
   }
 
-  doGetUserMedia (constraints) {
-    this.addLog('info', { status: 'pending', constraints });
-    return navigator.mediaDevices.getUserMedia(constraints)
-      .then((stream) => {
+  doGetUserMedia(constraints) {
+    this.addLog("info", { status: "pending", constraints });
+    return navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then(stream => {
         const audioTrack = this.getDeviceName(stream.getAudioTracks());
-        this.addLog('info', {status: 'success', audioTrack});
+        this.addLog("info", { status: "success", audioTrack });
         return stream;
       })
       .catch(error => {
         error.pcCode = ERROR_CODES.MEDIA;
-        this.addLog('error', {'status': 'fail', 'error': error});
-        this.addLog('error', `Failed to get access to local media due to error: ${error.name}`);
+        this.addLog("error", { status: "fail", error: error });
+        this.addLog(
+          "error",
+          `Failed to get access to local media due to error: ${error.name}`
+        );
         return this.reject(error);
       });
   }
 
-  getDeviceName (tracks) {
+  getDeviceName(tracks) {
     if (tracks.length === 0) {
       return null;
     }
     return tracks[0].label;
   }
 
-  setupCall (stream) {
+  setupCall(stream) {
     stream.getTracks().forEach(t => this.call.pc1.pc.addTrack(t, stream));
 
-    return this.call.establishConnection().then(() => {
-      this.addLog('info', { status: 'success', message: 'establishing connection' });
-      this.startTime = new Date();
-      this.localTrack = stream.getAudioTracks()[0];
-    }, (error) => {
-      this.addLog('warn', { status: 'error', error });
-      return Promise.reject(error);
-    });
+    return this.call.establishConnection().then(
+      () => {
+        this.addLog("info", {
+          status: "success",
+          message: "establishing connection"
+        });
+        this.startTime = new Date();
+        this.localTrack = stream.getAudioTracks()[0];
+      },
+      error => {
+        this.addLog("warn", { status: "error", error });
+        return Promise.reject(error);
+      }
+    );
   }
 
-  runTest () {
+  runTest() {
     return new Promise((resolve, reject) => {
       this.nextTimeout = setTimeout(() => {
         this.gatherStats().then(resolve, reject);
@@ -126,28 +140,33 @@ export default class AudioBandwidthTest extends Test {
     });
   }
 
-  gatherStats () {
+  gatherStats() {
     const now = new Date();
     if (now - this.startTime > this.durationMs) {
       return Promise.resolve();
     }
-    return this.call.pc1.getStats(this.localTrack)
+    return this.call.pc1
+      .getStats(this.localTrack)
       .then(this.gotStats.bind(this))
-      .catch((error) => this.addLog('error', 'Failed to getStats: ' + error));
+      .catch(error => this.addLog("error", "Failed to getStats: " + error));
   }
 
-  gotStats (response) {
+  gotStats(response) {
     if (!response) {
-      this.addLog('error', 'Got no response from stats... odd...');
+      this.addLog("error", "Got no response from stats... odd...");
     } else {
-      const results = typeof response.result === 'function' ? response.result() : response;
-      results.forEach((report) => {
+      const results =
+        typeof response.result === "function" ? response.result() : response;
+      results.forEach(report => {
         if (report.availableOutgoingBitrate) {
           const value = parseInt(report.availableOutgoingBitrate, 10);
           this.bweStats.add(new Date(report.timestamp), value);
         }
         if (report.totalRoundTripTime || report.roundTripTime) {
-          const value = parseInt(report.totalRoundTripTime || report.roundTripTime, 10);
+          const value = parseInt(
+            report.totalRoundTripTime || report.roundTripTime,
+            10
+          );
           this.rttStats.add(new Date(report.timestamp), value);
         }
         if (report.packetsSent) {
@@ -168,31 +187,35 @@ export default class AudioBandwidthTest extends Test {
     return this.runTest();
   }
 
-  completed () {
+  completed() {
     const stats = this.stats;
 
     stats.mbpsAvg = this.bweStats.getAverage() / (1000 * 1000);
     stats.mbpsMax = this.bweStats.getMax() / (1000 * 1000);
 
-    this.addLog('info', `Send bandwidth estimate average: ${stats.mbpsAvg} mpbs`);
-    this.addLog('info', `Send bandwidth estimate max: ${stats.mbpsMax} mbps`);
+    this.addLog(
+      "info",
+      `Send bandwidth estimate average: ${stats.mbpsAvg.toFix(2)} mpbs`
+    );
+    this.addLog("info", `Send bandwidth estimate max: ${stats.mbpsMax} mbps`);
 
     stats.rttAverage = this.rttStats.getAverage();
     stats.rttMax = this.rttStats.getMax();
     stats.packetsSent = parseInt(this.packetsSent);
 
     if (this.packetsSent) {
-      stats.packetLoss = parseInt(this.packetsLost || 0, 10) / parseFloat(this.packetsSent);
+      stats.packetLoss =
+        parseInt(this.packetsLost || 0, 10) / parseFloat(this.packetsSent);
     }
 
-    this.addLog('info', `RTT average: ${stats.rttAverage} ms`);
-    this.addLog('info', `RTT max: ${stats.rttMax} ms`);
-    this.addLog('info', `Packets sent: ${stats.rttMax} ms`);
-    this.addLog('info', `Packet loss %: ${stats.packetLoss}`);
+    this.addLog("info", `RTT average: ${stats.rttAverage.toFix(2)} ms`);
+    this.addLog("info", `RTT max: ${stats.rttMax} ms`);
+    this.addLog("info", `Packets sent: ${stats.rttMax} ms`);
+    this.addLog("info", `Packet loss %: ${stats.packetLoss}`);
     return this.results;
   }
 
-  destroy () {
+  destroy() {
     super.destroy();
     window.clearTimeout(this.nextTimeout);
     if (this.call) {

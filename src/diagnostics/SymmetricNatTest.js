@@ -1,27 +1,27 @@
-import Test from '../utils/Test';
-import parseCandidate from '../utils/parseCandidate';
+import Test from "../utils/Test";
+import parseCandidate from "../utils/parseCandidate";
 
 class SymmetricNatTest extends Test {
-  constructor () {
+  constructor() {
     super(...arguments);
-    this.name = 'Symmetric Nat Test';
+    this.name = "Symmetric Nat Test";
   }
 
-  start () {
+  start() {
     super.start();
 
     const pc = new window.RTCPeerConnection({
       iceServers: [
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
+        { urls: "turn:turn.huddldev.com:443?transport=tcp" },
+        { urls: "turn:turn.huddldev.com:443?transport=udp" }
       ]
     });
-    pc.createDataChannel('symmetricNatTest');
+    pc.createDataChannel("symmetricNatTest");
     const candidates = {};
-    pc.onicecandidate = (e) => {
-      if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
+    pc.onicecandidate = e => {
+      if (e.candidate && e.candidate.candidate.indexOf("srflx") !== -1) {
         const candidate = parseCandidate(e.candidate.candidate);
-        this.logger.log('SymmetricNatTest Candidate', candidate);
+        this.logger.log("SymmetricNatTest Candidate", candidate);
         if (!candidates[candidate.relatedPort]) {
           candidates[candidate.relatedPort] = [];
         }
@@ -31,9 +31,9 @@ class SymmetricNatTest extends Test {
         if (relatedPorts.length === 1) {
           const relatedPort = relatedPorts[0];
           const ports = candidates[relatedPort];
-          this.resolve(ports.length === 1 ? 'nat.asymmetric' : 'nat.symmetric');
+          this.resolve(ports.length === 1 ? "nat.asymmetric" : "nat.symmetric");
         } else if (relatedPorts.length === 0) {
-          this.resolve('nat.noSrflx');
+          this.resolve("nat.noSrflx");
         } else {
           let hasAsymmetric = false;
           let hasSymmetric = false;
@@ -47,13 +47,13 @@ class SymmetricNatTest extends Test {
             }
           }
           if (hasSymmetric && !hasAsymmetric) {
-            this.resolve('nat.symmetric');
+            this.resolve("nat.symmetric");
           } else if (!hasSymmetric && hasAsymmetric) {
-            this.resolve('nat.asymmetric');
+            this.resolve("nat.asymmetric");
           } else if (hasSymmetric && hasAsymmetric) {
-            this.resolve('nat.both');
+            this.resolve("nat.both");
           } else {
-            this.resolve('not.noSrflx');
+            this.resolve("not.noSrflx");
           }
         }
       }
@@ -63,7 +63,7 @@ class SymmetricNatTest extends Test {
     return this.promise;
   }
 
-  destroy () {
+  destroy() {
     super.destroy();
   }
 }
