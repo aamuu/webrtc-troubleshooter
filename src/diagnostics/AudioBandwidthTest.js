@@ -195,7 +195,7 @@ export default class AudioBandwidthTest extends Test {
 
     this.addLog(
       "info",
-      `Send bandwidth estimate average: ${stats.mbpsAvg.toFix(2)} mpbs`
+      `Send bandwidth estimate average: ${stats.mbpsAvg.toFixed(2)} mpbs`
     );
     this.addLog("info", `Send bandwidth estimate max: ${stats.mbpsMax} mbps`);
 
@@ -208,10 +208,11 @@ export default class AudioBandwidthTest extends Test {
         parseInt(this.packetsLost || 0, 10) / parseFloat(this.packetsSent);
     }
 
-    this.addLog("info", `RTT average: ${stats.rttAverage.toFix(2)} ms`);
+    this.addLog("info", `RTT average: ${stats.rttAverage.toFixed(2)} ms`);
     this.addLog("info", `RTT max: ${stats.rttMax} ms`);
     this.addLog("info", `Packets sent: ${stats.rttMax} ms`);
     this.addLog("info", `Packet loss %: ${stats.packetLoss}`);
+    stream.getAudioTracks()[0].stop();
     return this.results;
   }
 

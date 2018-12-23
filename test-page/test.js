@@ -78,13 +78,7 @@ runButton.onclick = function startTroubleshooter() {
       testCompleted.bind(null, videoTest, true),
       testCompleted.bind(null, videoTest, false)
     );
-    const advancedCameraTest = new WebrtcTroubleshooter.AdvancedCameraTest(
-      mediaOptions
-    );
-    advancedCameraTest.promise.then(
-      testCompleted.bind(null, advancedCameraTest, true),
-      testCompleted.bind(null, advancedCameraTest, false)
-    );
+
     const bandwidthTest = new WebrtcTroubleshooter.VideoBandwidthTest({
       iceConfig: iceConfig,
       mediaOptions: mediaOptions
@@ -95,7 +89,6 @@ runButton.onclick = function startTroubleshooter() {
     );
 
     testSuite.addTest(videoTest);
-    testSuite.addTest(advancedCameraTest);
     testSuite.addTest(bandwidthTest);
   }
 
@@ -107,11 +100,6 @@ runButton.onclick = function startTroubleshooter() {
       testCompleted.bind(null, connectivityTest, true),
       testCompleted.bind(null, connectivityTest, false)
     );
-    const throughputTest = new WebrtcTroubleshooter.ThroughputTest(iceConfig);
-    throughputTest.promise.then(
-      testCompleted.bind(null, throughputTest, true),
-      testCompleted.bind(null, throughputTest, false)
-    );
 
     const symmetricNatTest = new WebrtcTroubleshooter.SymmetricNatTest();
     symmetricNatTest.promise.then(
@@ -120,7 +108,6 @@ runButton.onclick = function startTroubleshooter() {
     );
 
     testSuite.addTest(connectivityTest);
-    testSuite.addTest(throughputTest);
     testSuite.addTest(symmetricNatTest);
   }
 

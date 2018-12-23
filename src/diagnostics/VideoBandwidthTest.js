@@ -110,16 +110,16 @@ export default class VideoBandwidthTest extends Test {
   }
 
   doGetUserMedia(constraints) {
-    this.addLog("info", { status: "pending", constraints });
+    this.addLog("info", {status: "pending", constraints});
     return navigator.mediaDevices.getUserMedia(constraints).then(
       stream => {
         const camera = this.getDeviceName(stream.getVideoTracks());
-        this.addLog("info", { status: "success", camera });
+        this.addLog("info", {status: "success", camera});
         return this.gotStream(stream);
       },
       error => {
         error.pcCode = ERROR_CODES.MEDIA;
-        this.addLog("error", { status: "fail", error: error });
+        this.addLog("error", {status: "fail", error: error});
         this.addLog(
           "error",
           `Failed to get access to local media due to error: ${error.name}`
@@ -154,7 +154,7 @@ export default class VideoBandwidthTest extends Test {
         });
       },
       error => {
-        this.addLog("warn", { status: "error", error });
+        this.addLog("warn", {status: "error", error});
         return Promise.reject(error);
       }
     );
@@ -210,6 +210,7 @@ export default class VideoBandwidthTest extends Test {
       }, this.statStepMs);
     });
   }
+
   completed() {
     const isWebkit = "WebkitAppearance" in document.documentElement.style;
     const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
@@ -231,7 +232,7 @@ export default class VideoBandwidthTest extends Test {
           "error",
           `Camera failure: ${this.videoStats[0]}x${
             this.videoStats[1]
-          }. Cannot test bandwidth without a working camera.`
+            }. Cannot test bandwidth without a working camera.`
         );
       } else {
         stats.resolution = `${this.videoStats[0]}x${this.videoStats[1]}`;
@@ -242,7 +243,7 @@ export default class VideoBandwidthTest extends Test {
         this.addLog("info", `Video resolution: ${stats.resolution}`);
         this.addLog(
           "info",
-          `Send bandwidth estimate average: ${stats.mbpsAvg.toFix(2)} mpbs`
+          `Send bandwidth estimate average: ${stats.mbpsAvg.toFixed(2)} mpbs`
         );
         this.addLog(
           "info",
@@ -283,9 +284,10 @@ export default class VideoBandwidthTest extends Test {
         parseInt(this.packetsLost || 0, 10) / parseFloat(this.packetsSent);
     }
 
-    this.addLog("info", `RTT average: ${stats.rttAverage.toFix(2)} ms`);
+    this.addLog("info", `RTT average: ${stats.rttAverage.toFixed(2)} ms`);
     this.addLog("info", `RTT max: ${stats.rttMax} ms`);
     this.addLog("info", `Lost packets: ${stats.lostPackets}`);
+    stream.getVideoTracks()[0].stop();
     return this.results;
   }
 

@@ -12,8 +12,14 @@ class SymmetricNatTest extends Test {
 
     const pc = new window.RTCPeerConnection({
       iceServers: [
-        { urls: "turn:turn.huddldev.com:443?transport=tcp" },
-        { urls: "turn:turn.huddldev.com:443?transport=udp" }
+        {
+          "urls": [
+            "turn:turn.huddldev.com:443?transport=tcp",
+            "turn:turn.huddldev.com:443?transport=udp"
+          ],
+          "username": "huddlvideo",
+          "credential": "huddlvideo@123"
+        }
       ]
     });
     pc.createDataChannel("symmetricNatTest");
